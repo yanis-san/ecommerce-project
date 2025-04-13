@@ -1,0 +1,61 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+*.bak
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Environnements virtuels
+.venv/
+env/
+venv/
+
+# IDEs et éditeurs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Système d'exploitation
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+*.bak
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Environnements virtuels
+.venv/
+env/
+venv/
+
+# IDEs et éditeurs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Système d'exploitation
+.DS_Store
+Thumbs.db
+
+# Déploiement
+*.env
+.env.*
+*.secret

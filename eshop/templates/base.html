@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La boutique de Yanis</title>
+</head>
+<body>
+    <a href="{% url 'index' %}">
+
+        <h1>La boutique de Yanis</h1>
+    </a>
+
+    {% if user.is_authenticated %}
+        {{user.email}}
+        <a href="{% url 'accounts:logout' %}">Se deconnecter</a>
+    {% else %}
+        <a href="{% url 'accounts:login' %}"> Se connecter </a>
+        <a href="{% url 'accounts:signup' %}"> S'inscrire </a>
+    {% endif %}
+
+    {% if user.cart %}
+        <a href="{% url 'store:cart' %}">Voir le panier({{ user.cart.orders.count }})</a>
+    {% endif %}
+
+    {% block content %} 
+    
+    
+    {% endblock content %}
+
+
+
+</body>
+</html>
