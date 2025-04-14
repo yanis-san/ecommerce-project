@@ -19,9 +19,18 @@
         <a href="{% url 'accounts:signup' %}"> S'inscrire </a>
     {% endif %}
 
+    {% if user.is_authenticated %}
     {% if user.cart %}
-        <a href="{% url 'store:cart' %}">Voir le panier({{ user.cart.orders.count }})</a>
+        <a href="{% url 'store:cart' %}">Voir le panier ({{ user.cart.orders.count }})</a>
     {% endif %}
+{% else %}
+    {% if request.session.cart %}
+        {% with cart_items=request.session.cart %}
+            <a href="{% url 'store:cart' %}">Voir le panier ({{ cart_items|length }})</a>
+        {% endwith %}
+    {% endif %}
+{% endif %}
+
 
     {% block content %} 
     

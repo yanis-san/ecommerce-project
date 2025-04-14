@@ -1,31 +1,40 @@
 {% extends "base.html" %}
 
-
 {% block content %}
-
-<form method="POST" action="{% url 'store:update-quantities' %}">
-    {% csrf_token %} 
-    {{forms.management_form}}
-    {% for form in forms %}
-        <div>
-            <img src="{{form.instance.product.thumbnail.url}}" alt="Image du produit">
-            <p>{{form.instance.product.description}}</p>
-            {{form.as_p}}
-
-        </div>
-
+    <h1>Mon panier</h1>
     
+    {% if forms %}
+        <!-- Panier pour les utilisateurs authentifiés -->
+        <form method="POST" action="{% url 'store:update-quantities' %}">
+            {% csrf_token %}
+            {{ forms.management_form }}
+            
+            {% for form in forms %}
+                <div>
+                    <img src="{{ form.instance.product.thumbnail.url }}" alt="Image du produit">
+                    <p>{{ form.instance.product.description }}</p>
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+            
+            <button type="submit">Mettre à jour le panier</button>
+        </form>
+    {% elif session_cart %}
+        <!-- Panier pour les utilisateurs non authentifiés -->
+        <ul>
+            {% for item in session_cart %}
+                <li>
+                    <img src="{{ item.product.thumbnail.url }}" alt="Image du produit">
+                    <p>{{ item.product.name }} ({{ item.quantity }})</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
     
-    {% endfor %}
-    <button type="submit">Mettre à jour le panier</button>
+    <form method="POST" action="{% url 'store:validate-cart' %}">
+        {% csrf_token %}
+        <button type="submit">Valider le panier</button>
+    </form>
 
-</form>
-
-<form method="POST" action="{% url 'store:validate-cart' %}">
-    {% csrf_token %}
-    <button type="submit">Valider le panier</button>
-</form>
-
-<a href="{% url "store:delete-cart" %}">Supprimer le panier</a>
-
+    <a href="{% url 'store:delete-cart' %}">Supprimer le panier</a>
 {% endblock content %}
