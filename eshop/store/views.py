@@ -63,14 +63,12 @@ def validate_cart(request):
     cart = get_object_or_404(Cart, user=request.user)
     orders = cart.orders.filter(ordered=False)
 
-    # Vérifier le stock des produits
     for order in orders:
         product = order.product
         if product.stock < order.quantity:
             messages.error(request, f"Il n'y a pas assez de stock pour {product.name}. Stock disponible : {product.stock}.")
             return redirect('store:cart')
 
-    # Si tout est bon, procéder à la validation
     for order in orders:
         order.ordered = True
         order.ordered_date = timezone.now()
