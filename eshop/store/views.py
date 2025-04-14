@@ -3,6 +3,8 @@ from django.urls import reverse
 from eshop.store.models import Product, Cart, Order
 from django.forms import modelformset_factory
 from eshop.store.forms import OrderForm
+from django.contrib import messages
+from django.utils import timezone
 
 
 def index(request):
@@ -54,3 +56,31 @@ def delete_cart(request):
         cart.delete()
 
     return redirect('index')
+
+
+
+def validate_cart(request):
+    cart = get_object_or_404(Cart, user=request.user)
+    orders = cart.orders.filter(ordered=False)
+
+    # Vérifier le stock des produits
+    for order in orders:
+        product = order.product
+        if product.stock < order.quantity:
+            messages.error(request, f"Il n'y a pas assez de stock pour {product.name}. Stock disponible : {product.stock}.")
+            return redirect('store:cart')
+
+    # Si tout est bon, procéder à la validation
+    for order in orders:
+        order.ordered = True
+        order.ordered_date = timezone.now()
+        order.product.stock -= order.quantity  # Déduire du stock
+        order.product.save()
+        order.save()
+
+    messages.success(request, "Votre commande a été validée avec succès.")
+    return redirect('store:order_confirmation')
+
+
+def order_confirmation(request):
+    return render(request, 'store/order_confirmation.html')

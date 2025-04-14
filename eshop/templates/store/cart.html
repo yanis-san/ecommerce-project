@@ -21,6 +21,11 @@
 
 </form>
 
+<form method="POST" action="{% url 'store:validate-cart' %}">
+    {% csrf_token %}
+    <button type="submit">Valider le panier</button>
+</form>
+
 <a href="{% url "store:delete-cart" %}">Supprimer le panier</a>
 
 {% endblock content %}
