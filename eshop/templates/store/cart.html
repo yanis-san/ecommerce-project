@@ -19,6 +19,7 @@
             
             <button type="submit">Mettre à jour le panier</button>
         </form>
+        <a href="{% url 'store:validate-cart' %}">Valider le panier</a>
     {% elif session_cart %}
         <!-- Panier pour les utilisateurs non authentifiés -->
         <ul>
@@ -29,12 +30,10 @@
                 </li>
             {% endfor %}
         </ul>
+        <a href="{% url 'store:checkout' %}">Passer à la caisse</a>
+    {% else %}
+        <p>Votre panier est vide.</p>
     {% endif %}
     
-    <form method="POST" action="{% url 'store:validate-cart' %}">
-        {% csrf_token %}
-        <button type="submit">Valider le panier</button>
-    </form>
-
     <a href="{% url 'store:delete-cart' %}">Supprimer le panier</a>
 {% endblock content %}

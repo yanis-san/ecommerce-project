@@ -1,26 +1,75 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<form method= "POST" action="">
+<h1>Profil</h1>
+<form method="POST">
     {% csrf_token %}
-    {{form.as_p}}
-
-    {% if messages %}
-        <ul>
-            {% for message in messages %}
-                <li>{{message}}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    {{ form.as_p }}
+    <input type="hidden" name="action" value="update_profile">
     <button type="submit">Sauvegarder</button>
-
 </form>
-{% if address %}
-<h1>Adresses de livraison</h1>
-{% endif %}
-{% for address in addresses %}
-{% include "accounts/account/address.html" %}
 
+<h2>Adresses de livraison</h2>
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_address">
+    <label for="name">Nom :</label>
+    <input type="text" name="name" id="name" required>
+
+    <label for="address_1">Adresse 1 :</label>
+    <input type="text" name="address_1" id="address_1" required>
+
+    <label for="address_2">Adresse 2 :</label>
+    <input type="text" name="address_2" id="address_2">
+
+    <label for="city">Ville :</label>
+    <input type="text" name="city" id="city" required>
+
+    <label for="district">Région :</label>
+    <input type="text" name="district" id="district" required>
+
+    <label for="zip_code">Code postal :</label>
+    <input type="text" name="zip_code" id="zip_code" required>
+
+    <button type="submit">Ajouter une adresse</button>
+</form>
+
+{% for address in addresses %}
+    <div>
+        <p>{{ address }}</p>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_address">
+            <input type="hidden" name="address_id" value="{{ address.id }}">
+            <label for="name">Nom :</label>
+            <input type="text" name="name" value="{{ address.name }}" required>
+
+            <label for="address_1">Adresse 1 :</label>
+            <input type="text" name="address_1" value="{{ address.address_1 }}" required>
+
+            <label for="address_2">Adresse 2 :</label>
+            <input type="text" name="address_2" value="{{ address.address_2 }}">
+
+            <label for="city">Ville :</label>
+            <input type="text" name="city" value="{{ address.city }}" required>
+
+            <label for="district">Région :</label>
+            <input type="text" name="district" value="{{ address.district }}" required>
+
+            <label for="zip_code">Code postal :</label>
+            <input type="text" name="zip_code" value="{{ address.zip_code }}" required>
+
+            <button type="submit">Mettre à jour</button>
+        </form>
+
+        {% if addresses|length > 1 %}
+            <a href="{% url 'accounts:set_default_shipping_address' address.id %}">Définir comme adresse par défaut</a>
+        {% endif %}
+        
+        <form method="POST" action="{% url 'accounts:delete-address' address.id %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit">Supprimer</button>
+        </form>
+    </div>
 {% endfor %}
 {% endblock content %}

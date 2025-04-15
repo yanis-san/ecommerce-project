@@ -45,7 +45,7 @@ ADRESS_FORMAT = """
 """
 
 class ShippingAddress(models.Model):
-    user = models.ForeignKey(Shopper, on_delete=models.CASCADE)
+    user = models.ForeignKey(Shopper, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=240)
     address_1 = models.CharField(max_length=1024, help_text="Adresse de voirie et numéro de rue")
     address_2 = models.CharField(max_length=1024, help_text="Bâtiment, étage, lieu-dit...", blank=True)

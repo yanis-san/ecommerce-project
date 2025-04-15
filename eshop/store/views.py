@@ -5,6 +5,9 @@ from django.forms import modelformset_factory
 from eshop.store.forms import OrderForm
 from django.contrib import messages
 from django.utils import timezone
+from eshop.accounts.forms import ShippingAddressForm
+from eshop.accounts.models import ShippingAddress
+
 
 
 def index(request):
@@ -108,6 +111,25 @@ def validate_cart(request):
         # Utilisateur authentifié
         cart = get_object_or_404(Cart, user=request.user)
         orders = cart.orders.filter(ordered=False)
+
+        # Vérifier si l'utilisateur a une adresse par défaut
+        shipping_address = request.user.shippingaddress_set.filter(default=True).first()
+        if not shipping_address:
+            # Si l'utilisateur n'a qu'une seule adresse, elle devient par défaut
+            addresses = request.user.shippingaddress_set.all()
+            if addresses.count() == 1:
+                shipping_address = addresses.first()
+                shipping_address.default = True
+                shipping_address.save()
+            else:
+                messages.error(request, "Veuillez définir une adresse de livraison avant de valider votre commande.")
+                return redirect("accounts:profile")
+
+        # Associer l'adresse par défaut à chaque commande
+        for order in orders:
+            order.shipping_address = shipping_address
+            order.save()
+
     else:
         # Utilisateur non authentifié
         cart_data = request.session.get("cart", {})
@@ -115,24 +137,25 @@ def validate_cart(request):
             messages.error(request, "Votre panier est vide.")
             return redirect("index")
 
-        # Créer et sauvegarder les ordres dans la base de données
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
+        # Récupérer les informations de livraison depuis la session
+        shipping_address_data = request.session.get("shipping_address")
+        if not shipping_address_data:
+            messages.error(request, "Veuillez fournir vos informations de livraison.")
+            return redirect("store:checkout")
 
+        # Créer une adresse de livraison temporaire
+        shipping_address = ShippingAddress.objects.create(**shipping_address_data)
+
+        # Créer les commandes pour les utilisateurs non connectés
         orders = []
         for product_id, quantity in cart_data.items():
             product = get_object_or_404(Product, id=product_id)
-            order, created = Order.objects.get_or_create(
+            order = Order.objects.create(
                 product=product,
-                session_key=session_key,
-                ordered=False,
-                defaults={"quantity": quantity}
+                quantity=quantity,
+                shipping_address=shipping_address,
+                ordered=False
             )
-            if not created:
-                order.quantity += quantity
-                order.save()
             orders.append(order)
 
     # Vérification du stock pour chaque produit
@@ -156,11 +179,38 @@ def validate_cart(request):
     # Vider le panier pour les utilisateurs non authentifiés
     if not request.user.is_authenticated:
         request.session["cart"] = {}
+        request.session["shipping_address"] = {}
         request.session.modified = True
 
     messages.success(request, "Votre commande a été validée avec succès.")
     return redirect('store:order_confirmation')
 
-
 def order_confirmation(request):
     return render(request, 'store/order_confirmation.html')
+
+
+
+def checkout(request):
+    if request.user.is_authenticated:
+  
+        return redirect('store:validate-cart')
+
+    cart_data = request.session.get("cart", {})
+    if not cart_data:
+        messages.error(request, "Votre panier est vide.")
+        return redirect("store:cart")
+
+
+    product_ids = cart_data.keys()
+    products = Product.objects.filter(id__in=product_ids)
+
+    if request.method == "POST":
+        form = ShippingAddressForm(request.POST)
+        if form.is_valid():
+            request.session["shipping_address"] = form.cleaned_data
+            messages.success(request, "Vos informations de livraison ont été enregistrées.")
+            return redirect('store:validate-cart')
+    else:
+        form = ShippingAddressForm()
+
+    return render(request, "store/checkout.html", context={"form": form, "cart": cart_data, "products": products})

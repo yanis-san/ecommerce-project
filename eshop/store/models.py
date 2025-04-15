@@ -3,6 +3,7 @@ from django.urls import reverse
 from config.settings import AUTH_USER_MODEL
 from django.utils import timezone
 from django.utils.text import slugify
+from eshop.accounts.models import ShippingAddress
 
 class Product(models.Model):
     name = models.CharField(max_length=128)
@@ -26,15 +27,21 @@ class Product(models.Model):
 
 class Order(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-    session_key = models.CharField(max_length=255, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
     ordered = models.BooleanField(default=False)
     ordered_date = models.DateTimeField(blank=True, null=True)
     
 
     def __str__(self):
         return f"{self.product.name}({self.quantity})"
+
+    def save(self, *args, **kwargs):
+        if self.user:
+            if not self.user.shippingaddress_set.exclude(pk=self.pk).exists():
+                self.default = True
+        super().save(*args, **kwargs)
     
 
 

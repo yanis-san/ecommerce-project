@@ -10,5 +10,7 @@ urlpatterns = [
     path('delete_address/<int:pk>', delete_address, name="delete-address"),
     path('login/', login_user, name="login"),
     path('logout/', logout_user, name="logout"),
+    path("set-default-address/<int:pk>/", set_default_shipping_address, name="set_default_shipping_address"),
+
 ]
 

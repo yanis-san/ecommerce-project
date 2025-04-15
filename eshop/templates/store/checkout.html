@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Passer à la caisse</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Valider les informations de livraison</button>
+    </form>
+    <h3>Résumé du panier</h3>
+    {% for product in products %}
+        <div>
+            <p>Produit : {{ product.name }}</p>
+            <p>Prix : {{ product.price }} €</p>
+            <p>Quantité : {{ quantity }}</p>
+        </div>
+    {% endfor %}
+{% endblock content %}
