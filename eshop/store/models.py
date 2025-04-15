@@ -26,10 +26,12 @@ class Product(models.Model):
 
 class Order(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    session_key = models.CharField(max_length=255, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     ordered = models.BooleanField(default=False)
     ordered_date = models.DateTimeField(blank=True, null=True)
+    
 
     def __str__(self):
         return f"{self.product.name}({self.quantity})"
