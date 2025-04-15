@@ -33,7 +33,6 @@ class Order(models.Model):
     ordered = models.BooleanField(default=False)
     ordered_date = models.DateTimeField(blank=True, null=True)
     
-
     def __str__(self):
         return f"{self.product.name}({self.quantity})"
 
