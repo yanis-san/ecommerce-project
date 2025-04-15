@@ -115,14 +115,24 @@ def validate_cart(request):
             messages.error(request, "Votre panier est vide.")
             return redirect("index")
 
-        # Créer une liste d'ordres à partir des produits en session
+        # Créer et sauvegarder les ordres dans la base de données
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
+
         orders = []
         for product_id, quantity in cart_data.items():
             product = get_object_or_404(Product, id=product_id)
-
-            # Si l'utilisateur n'est pas authentifié, ne pas assigner un "user" à l'Order
-            # ou créer un objet temporaire pour l'utilisateur non authentifié
-            order = Order(product=product, quantity=quantity, user=None, ordered=False)
+            order, created = Order.objects.get_or_create(
+                product=product,
+                session_key=session_key,
+                ordered=False,
+                defaults={"quantity": quantity}
+            )
+            if not created:
+                order.quantity += quantity
+                order.save()
             orders.append(order)
 
     # Vérification du stock pour chaque produit
@@ -136,10 +146,7 @@ def validate_cart(request):
     for order in orders:
         order.ordered = True
         order.ordered_date = timezone.now()
-
-        # Si l'utilisateur est authentifié, enregistrer la commande dans la base de données
-        if request.user.is_authenticated:
-            order.save()
+        order.save()
 
         # Déduire du stock du produit
         product = order.product
